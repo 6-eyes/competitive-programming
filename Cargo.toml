@@ -1,3 +1,3 @@
 [workspace]
 resolver = "2"
-members = ["convergence_2232a", "cake_levelling_2232b"]
+members = ["codeforces", "atcoder"]

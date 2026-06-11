@@ -4,15 +4,12 @@ fn main() -> Result<(), Error> {
 	let mut s = String::new();
 	stdin().read_to_string(&mut s).map_err(Error::Input)?;
 
-	println!("{}", solve(&s)?);
+	print!("{}", solve(&s)?);
 
 	Ok(())
 }
 
 macro_rules! parse {
-	($iter: expr, $t:ty) => {
-		$iter.next().ok_or(Error::Iter)?.parse::<$t>().map_err(Error::Parse)?
-	};
 	($iter: expr) => {
 		$iter.next().ok_or(Error::Iter)?.parse::<usize>().map_err(Error::Parse)?
 	};
@@ -21,37 +18,84 @@ macro_rules! parse {
 fn solve(input: &str) -> Result<String, Error> {
 
 	let mut iter = input.split_ascii_whitespace();
-	
-	let (n, q) = (parse!(iter), parse!(iter, u32));
+	let (n, q) = (parse!(iter), parse!(iter));
 
-	todo!()
+	let mut b = 0;
+	// track [ rows(type 1), cols(type 2) ]
+	let mut f = [FenwickTree::new(q + 1, 0), FenwickTree::new(q + 1, 0)];
+	// the last seen change on the [ rows: no rows are marked initially, cols: all cols are marked initially ]
+	let mut l = [ vec!{ None; n + 1 }, vec!{ Some(0); n + 1 } ];
+	let mut ans = String::new();
+
+	for idx in 1..=q {
+		// t => type is either 1 or 2
+		// x => row/column number. 1 indexed.
+		let (t, x) = (parse!(iter) - 1, parse!(iter));
+
+		if let Some(last_seen_query_idx) = l[t][x] {
+			// find the number last occurences of opposite type after the last seen on the row x
+			let other_kind = f[1 - t].sum(last_seen_query_idx..idx);
+			match t {
+				0 => b += other_kind,
+				1 => b -= other_kind,
+				t => unreachable!("invalid type {t}"),
+			}
+
+			f[t].add(last_seen_query_idx, -1);
+		}
+		else {
+			// first change
+			// only valid for rows which are initially `None`. once defined, these are set to Some
+			// cols will never
+			b += n as isize;
+		}
+
+		// update the visited count
+		f[t].add(idx, 1);
+		// update last seen
+		l[t][x] = Some(idx);
+
+		use std::fmt::Write;
+		writeln!(ans, "{b}")?;
+	}
+
+	Ok(ans)
 }
 
 /// Source:  https://github.com/rust-lang-ja/ac-library-rs/blob/master/src/fenwicktree.rs
 #[derive(Debug)]
 struct FenwickTree{
-	data: Vec<u32>,
-	init: u32,
+	data: Vec<isize>,
+	init: isize,
 }
 
 impl FenwickTree {
-	fn new(n: usize, init: u32) -> Self {
+	fn new(n: usize, init: isize) -> Self {
 		Self{
 			data: vec!{ init; n },
 			init,
 		}
 	}
 
-	fn add(&mut self, mut idx: usize, val: u32) {
+	/// Adds the value to the given index.
+	/// 
+	/// **Complexity:** O(log(n))
+	fn add(&mut self, mut idx: usize, val: isize) {
 		// fenwick trees are 1 indexed
 		idx += 1;
+		// iterate till the end of the array
 		while idx <= self.data.len() {
+			// the value for index 1 is stored at data[0], for index 2, it is stored at data[1] and so on.
 			self.data[idx - 1] += val;
+			// jump to the next index which is idx & -idx
 			idx += idx & idx.wrapping_neg();
 		}
 	}
 
-	fn sum(&self, range: impl RangeBounds<usize>) -> u32 {
+	/// Fetches the sum of the provided range
+	/// 
+	/// **Complexity:** O(log(n))
+	fn sum(&self, range: impl RangeBounds<usize>) -> isize {
 		let accum = |mut idx| {
 			let mut sum = self.init;
 
@@ -85,32 +129,41 @@ enum Error {
 	Input(std::io::Error),
 	Iter,
 	Parse(ParseIntError),
+	Write(std::fmt::Error),
 }
 
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    	match self {
-	        Error::Input(e) => write!(f, "unable to fetch input: {e}"),
-	        Error::Iter => write!(f, "unable to fetch from iterator"),
-	        Error::Parse(e) => write!(f, "error parsing element: {e}"),
-	    }
-    }
+		match self {
+			Error::Input(e) => write!(f, "unable to fetch input: {e}"),
+			Error::Iter => write!(f, "unable to fetch from iterator"),
+			Error::Parse(e) => write!(f, "error parsing element: {e}"),
+			Error::Write(e) => write!(f, "error writing to the string: {e}"),
+		}
+	}
 }
 
 impl From<ParseIntError> for Error {
-    fn from(value: ParseIntError) -> Self {
-    	Self::Parse(value)
-    }
+	fn from(value: ParseIntError) -> Self {
+		Self::Parse(value)
+	}
+}
+
+impl From<std::fmt::Error> for Error {
+	fn from(value: std::fmt::Error) -> Self {
+		Self::Write(value)
+	}
 }
 
 impl Termination for Error {
-    fn report(self) -> std::process::ExitCode {
-        match self {
-            Error::Input(_) => ExitCode::from(1),
-            Error::Iter => ExitCode::from(2),
-            Error::Parse(_) => ExitCode::from(3),
-        }
-    }
+	fn report(self) -> std::process::ExitCode {
+		match self {
+			Error::Input(_) => ExitCode::from(1),
+			Error::Iter => ExitCode::from(2),
+			Error::Parse(_) => ExitCode::from(3),
+			Error::Write(_) => ExitCode::from(4),
+		}
+	}
 }
 
 impl std::error::Error for Error {}
@@ -156,7 +209,7 @@ mod tests {
 
 		for i in 0..5 {
 			// fn add(index, value)
-			bit.add(i, i as u32 + 1);
+			bit.add(i, i as isize + 1);
 		}
 
 		assert_eq!(bit.sum(0..5), 15);

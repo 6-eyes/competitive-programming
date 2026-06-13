@@ -5,32 +5,36 @@ edition = "2024"
 
 [[bin]]
 name = "practice2a"
-path = "src/practice2a.rs"
+path = "practice2/a.rs"
 
 [[bin]]
 name = "abc461_a"
-path = "src/abc461_a.rs"
+path = "abc461/a.rs"
 
 [[bin]]
 name = "abc461_b"
-path = "src/abc461_b.rs"
+path = "abc461/b.rs"
 
 [[bin]]
 name = "abc461_c"
-path = "src/abc461_c.rs"
+path = "abc461/c.rs"
 
 [[bin]]
 name = "abc461_d"
-path = "src/abc461_d.rs"
+path = "abc461/d.rs"
 
 [[bin]]
 name = "abc461_e"
-path = "src/abc461_e.rs"
+path = "abc461/e.rs"
+
+[[bin]]
+name = "abc461_f"
+path = "abc461/f.rs"
 
 [[bin]]
 name = "abc460_a"
-path = "src/abc460_a.rs"
+path = "abc460/a.rs"
 
 [[bin]]
 name = "abc460_b"
-path = "src/abc460_b.rs"
+path = "abc460/b.rs"

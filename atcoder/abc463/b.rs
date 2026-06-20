@@ -13,12 +13,12 @@ fn solve(input: &str) -> Result<&'static str, Error> {
     let mut iter = input.split_ascii_whitespace();
     let (n, x) = {
         let (n, x) = (iter.next().ok_or(Error::Iter)?, iter.next().ok_or(Error::Iter)?);
-        let n = n.parse::<u8>()? - 1; // 0 indexed
+        let n = n.parse::<u8>()?;
         let x = x.chars().next().ok_or(Error::Iter)? as usize - 'A' as usize; // 0 indexed
         (n, x)
     };
 
-    for _ in 0..=n {
+    for _ in 0..n {
         let line = iter.next().ok_or(Error::Iter)?;
         match line.chars().nth(x).ok_or(Error::Iter)? {
             'o' => return Ok("Yes"),

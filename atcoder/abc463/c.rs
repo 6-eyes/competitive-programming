@@ -20,38 +20,28 @@ fn solve(input: &str) -> Result<String, Error> {
     let mut iter = input.split_ascii_whitespace();
     let n = iter.next().ok_or(Error::Iter)?.parse::<usize>()?;
 
-    let mut data = Vec::with_capacity(n);
+    let mut data = Vec::new();
     for _ in 0..n {
         let (h, l) = (iter.next().ok_or(Error::Iter)?.parse::<u32>()?, iter.next().ok_or(Error::Iter)?.parse::<u32>()?);
-        data.push((l, h));
+        // pop while the takahashis are smaller than the given height
+        while let Some((ph, _)) = data.last() && *ph <= h { data.pop(); }
+        data.push((h, l));
     }
 
-    // will sort by first value
-    data.sort();
-
-    let mut max_height = 0;
-    data.iter_mut().rev().for_each(|(_, h)| {
-        max_height = max_height.max(*h);
-        *h = max_height;
-    });
-
-    // data.iter().for_each(|v| println!("{v:?}"));
     let q = iter.next().ok_or(Error::Iter)?.parse::<usize>()?;
     let mut ans = String::new();
 
     for _ in 0..q {
         let t = iter.next().ok_or(Error::Iter)?.parse::<u32>()?;
-        let i = match data.binary_search_by(|(l, _)| match l.cmp(&t) {
-            std::cmp::Ordering::Less => std::cmp::Ordering::Less,
-            std::cmp::Ordering::Equal => std::cmp::Ordering::Less,
-            std::cmp::Ordering::Greater => std::cmp::Ordering::Greater,
-        }) {
-            Ok(i) => i,
-            Err(i) => i,
-        };
+
+        use std::cmp::Ordering::{Less, Greater};
+        let i = data.binary_search_by(|(_, l)| match t.cmp(l) {
+            Less => Greater,
+            _ => Less,
+        }).unwrap_err();
 
         use std::fmt::Write;
-        writeln!(ans, "{}", data[i].1)?;
+        writeln!(ans, "{}", data[i].0)?;
     }
 
     Ok(ans)

@@ -15,19 +15,8 @@ fn solve(input: &str) -> Result<&'static str, Error> {
         (x.trim().parse::<u32>()?, y.trim().parse::<u32>()?)
     };
 
-    /// Calculates the gcd/hcf of two numbers a and b
-    fn gcd(a: u32, b: u32) -> u32 {
-        if b == 0 { a } else { gcd(b, a % b) }
-    }
-
-    let gcd = gcd(x, y);
-
-    if x == 16 * gcd && y == 9 * gcd {
-        Ok("Yes")
-    } 
-    else {
-        Ok("No")
-    }
+    // -_-
+    Ok(if 9 * x == 16 * y { "Yes" } else { "No" })
 }
 
 #[derive(Debug)]

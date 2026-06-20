@@ -24,6 +24,10 @@ name = "abc460_e"
 path = "abc460/e.rs"
 
 [[bin]]
+name = "abc460_f"
+path = "abc460/f.rs"
+
+[[bin]]
 name = "practice2a"
 path = "practice2/a.rs"
 
@@ -50,3 +54,15 @@ path = "abc461/e.rs"
 [[bin]]
 name = "abc461_f"
 path = "abc461/f.rs"
+
+[[bin]]
+name = "abc463_a"
+path = "abc463/a.rs"
+
+[[bin]]
+name = "abc463_b"
+path = "abc463/b.rs"
+
+[[bin]]
+name = "abc463_c"
+path = "abc463/c.rs"

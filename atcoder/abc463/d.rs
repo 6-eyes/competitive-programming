@@ -9,12 +9,18 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
+macro_rules! parse {
+    ($iter: expr) => {
+        $iter.next().ok_or(Error::Iter)?.parse::<usize>()?
+    };
+}
+
 fn solve(input: &str) -> Result<Option<usize>, Error> {
     let mut iter = input.split_ascii_whitespace();
-    let (n, k) = (iter.next().ok_or(Error::Iter)?.parse::<usize>()?, iter.next().ok_or(Error::Iter)?.parse::<usize>()?);
+    let (n, k) = (parse!(iter), parse!(iter));
     let mut clothes = Vec::with_capacity(n);
     for _ in 0..n {
-        let (l, r) = (iter.next().ok_or(Error::Iter)?.parse::<usize>()?, iter.next().ok_or(Error::Iter)?.parse::<usize>()?);
+        let (l, r) = (parse!(iter), parse!(iter));
         clothes.push((l, r));
     }
 

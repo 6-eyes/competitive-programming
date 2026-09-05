@@ -1,4 +1,4 @@
-use std::io::{Read, stdin};
+use std::{collections::HashMap, io::{Read, stdin}};
 use ac::Error;
 
 fn main() -> Result<(), Error> {
@@ -13,31 +13,30 @@ fn main() -> Result<(), Error> {
 fn solve(input: &str) -> Result<usize, Error> {
     let mut iter = input.split_ascii_whitespace();
     let (n, k) = (parse!(iter), parse!(iter));
-    let mut ps = Vec::<usize>::with_capacity(n);
+    let mut ps = Vec::<usize>::with_capacity(n + 1);
+    ps.push(0);
     for i in 0..n {
         let a = parse!(iter);
-        let sum = a + i.checked_sub(1).map(|i| ps[i]).unwrap_or_default();
-        ps.push(sum);
+        ps.push((a + ps[i]) % k);
     }
 
-    println!("{ps:?}");
-    let (mut ans, mut l, mut r) = (0, 0, 1);
+    let mut ans = 0;
 
-    'o: while r < n {
-        while r < n {
-            println!("checking l={l}, r={r}, ({}), k={k}", ps[r] - ps[l]);
-            if (ps[r] - ps[l]) % k == 0 {
-                println!("passed");
-                l += r + 1;
-                r = l + 1;
+    let mut seen = HashMap::new();
+    let mut r = 0;
+    for (i, e) in ps.into_iter().enumerate() {
+        // check if the entry is already seen
+        seen.entry(e).and_modify(|p| {
+            // check if the seen is after the last added entry index
+            if *p >= r {
                 ans += 1;
-                continue 'o;
+                // update the last added entry index
+                r = i;
             }
-            r += 1;
-        }
 
-        l += 1;
-        r = l + 1;
+            // update the value
+            *p = i;
+        }).or_insert(i);
     }
 
     Ok(ans)

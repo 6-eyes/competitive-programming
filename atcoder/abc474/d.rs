@@ -1,3 +1,91 @@
+use std::io::{Read, stdin};
+use ac::Error;
+
+fn main() -> Result<(), Error> {
+    let mut s = String::new();
+    stdin().read_to_string(&mut s).map_err(Error::Input)?;
+
+    print!("{}", solve(&s)?);
+
+    Ok(())
+}
+
+/// 4a + 7b + 4c > 5a + 5b + 5c
+/// -a + 2b - c > 0
+fn solve(input: &str) -> Result<String, Error> {
+    let mut iter = input.split_ascii_whitespace();
+    let n = parse!(iter);
+
+    let mut a = Vec::with_capacity(n);
+    for _ in 0..n {
+        let e = parse!(iter);
+        a.push(e);
+    }
+
+    let mut b = Vec::with_capacity(n);
+    for _ in 0..n {
+        let e = parse!(iter);
+        b.push(e);
+    }
+
+    let mut ans = String::new();
+    use std::fmt::Write;
+    if a.iter().zip(b).all(|(a, b)| *a <= b) {
+        writeln!(ans, "No")?;
+        return Ok(ans);
+    }
+
+    writeln!(ans, "Yes")?;
+    writeln!(ans, "{}", a.into_iter().map(|e| e.to_string()).collect::<Vec<String>>().join(" "))?;
+
+    Ok(ans)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::solve;
+
+    #[test]
+    fn test_1() {
+        let input = "3
+4 7 4
+5 5 5
+";
+
+        let output = "Yes
+4 7 4
+";
+
+        std::assert_matches!(solve(input), Ok(o) if o == output);
+    }
+
+    #[test]
+    fn test_2() {
+        let input = "3
+3 3 3
+4 7 4
+";
+
+        let output = "No
+";
+
+        std::assert_matches!(solve(input), Ok(o) if o == output);
+    }
+
+    #[test]
+    fn test_3() {
+        let input = "1
+2
+2
+";
+
+        let output = "No
+";
+
+        std::assert_matches!(solve(input), Ok(o) if o == output);
+    }
+}
+
 mod ac {
     #![allow(unused)]
 
@@ -11,6 +99,7 @@ mod ac {
         Input(std::io::Error),
         Iter,
         Parse(ParseIntError),
+    	Write(std::fmt::Error),
     }
 
     impl Display for Error {
@@ -19,6 +108,7 @@ mod ac {
                 Error::Input(e) => write!(f, "unable to fetch input: {e}"),
                 Error::Iter => write!(f, "error fetching value from iterator"),
                 Error::Parse(e) => write!(f, "error parsing element: {e}"),
+    			Error::Write(e) => write!(f, "error writing to the string: {e}"),
             }
         }
     }
@@ -29,12 +119,19 @@ mod ac {
         }
     }
 
+    impl From<std::fmt::Error> for Error {
+    	fn from(value: std::fmt::Error) -> Self {
+    		Self::Write(value)
+    	}
+    }
+
     impl Termination for Error {
         fn report(self) -> std::process::ExitCode {
             match self {
                 Error::Input(_) => ExitCode::from(1),
                 Error::Iter => ExitCode::from(2),
                 Error::Parse(_) => ExitCode::from(3),
+    			Error::Write(_) => ExitCode::from(4),
             }
         }
     }
@@ -70,78 +167,5 @@ mod ac {
         }
 
         res
-    }
-}
-
-use std::io::{Read, stdin};
-use ac::Error;
-
-fn main() -> Result<(), Error> {
-    let mut s = String::new();
-    stdin().read_to_string(&mut s).map_err(Error::Input)?;
-
-    print!("{}", solve(&s)?);
-
-    Ok(())
-}
-
-/// (x, y, c)
-/// (p1, p2, ..., pn)
-///
-/// (0, 0, 0)
-/// (4, 0, 1)
-/// remaining elements: 4
-/// (4, 0, 1)
-/// x can accomodate 1 element, y can accomodate 2 elements
-/// 
-/// (4, 3, 1)
-/// x can accomodate 1 element, y can accomodate (2 - 1) element
-///
-/// (6, 5, 4, 3, 2, 1)
-/// (6, 0, 1)
-/// (6, 1, 2)
-///
-/// (3, 6, 5, 2, 7, 8, 9, 1, 4)
-/// (3, 0, 1)
-/// (3, 6, 0) => more than 3 + more than 6 = 5 + 3 = 8
-/// (6, 0, 1) => more than 6 + more than 0 = 3 + 7 = 10
-/// (6, 0, 1)
-/// (6, 0, 1) => 3 + 6 = 9
-/// (6, 5, 1) => 3 + 3 = 6
-/// (6, 0, 1)
-/// ()
-fn solve(input: &str) -> Result<usize, Error> {
-    todo!()
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::solve;
-
-    #[test]
-    fn test_1() {
-        let input = "2
-2 3
-";
-
-        std::assert_matches!(solve(input), Ok(499122184));
-    }
-
-    #[test]
-    fn test_2() {
-        let input = "6
-1 2 3 4 5 6
-";
-
-        std::assert_matches!(solve(input), Ok(499122250));
-    }
-
-    #[test]
-    fn test_3() {
-        let input = "9
-3 1 4 1 5 9 2 6 5
-";
-
-        std::assert_matches!(solve(input), Ok(855638200));
     }
 }

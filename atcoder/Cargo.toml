@@ -262,3 +262,35 @@ path = "abc473/d.rs"
 [[bin]]
 name = "abc473_e"
 path = "abc473/e.rs"
+
+[[bin]]
+name = "abc474_a"
+path = "abc474/a.rs"
+
+[[bin]]
+name = "abc474_b"
+path = "abc474/b.rs"
+
+[[bin]]
+name = "abc474_c"
+path = "abc474/c.rs"
+
+[[bin]]
+name = "abc474_d"
+path = "abc474/d.rs"
+
+[[bin]]
+name = "abc475_a"
+path = "abc475/a.rs"
+
+[[bin]]
+name = "abc475_b"
+path = "abc475/b.rs"
+
+[[bin]]
+name = "abc475_c"
+path = "abc475/c.rs"
+
+[[bin]]
+name = "abc475_d"
+path = "abc475/d.rs"

@@ -1,3 +1,51 @@
+use std::io::{Read, stdin};
+use ac::Error;
+
+fn main() -> Result<(), Error> {
+    let mut s = String::new();
+    stdin().read_to_string(&mut s).map_err(Error::Input)?;
+
+    print!("{}", solve(&s)?);
+
+    Ok(())
+}
+
+fn solve(input: &str) -> Result<u8, Error> {
+    let x = input.trim().parse::<u8>()?;
+    let mut iter = (1..=3).cycle();
+    iter.find(|v| *v != x).ok_or(Error::Iter)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::solve;
+
+    #[test]
+    fn test_1() {
+        let input = "1
+";
+
+        std::assert_matches!(solve(input), Ok(2));
+    }
+
+    #[test]
+    fn test_2() {
+        let input = "2
+";
+
+        std::assert_matches!(solve(input), Ok(1));
+    }
+
+    #[test]
+    fn test_3() {
+        let input = "3
+";
+
+        std::assert_matches!(solve(input), Ok(1));
+    }
+
+}
+
 mod ac {
     #![allow(unused)]
 
@@ -11,6 +59,7 @@ mod ac {
         Input(std::io::Error),
         Iter,
         Parse(ParseIntError),
+    	Write(std::fmt::Error),
     }
 
     impl Display for Error {
@@ -19,6 +68,7 @@ mod ac {
                 Error::Input(e) => write!(f, "unable to fetch input: {e}"),
                 Error::Iter => write!(f, "error fetching value from iterator"),
                 Error::Parse(e) => write!(f, "error parsing element: {e}"),
+    			Error::Write(e) => write!(f, "error writing to the string: {e}"),
             }
         }
     }
@@ -29,12 +79,19 @@ mod ac {
         }
     }
 
+    impl From<std::fmt::Error> for Error {
+    	fn from(value: std::fmt::Error) -> Self {
+    		Self::Write(value)
+    	}
+    }
+
     impl Termination for Error {
         fn report(self) -> std::process::ExitCode {
             match self {
                 Error::Input(_) => ExitCode::from(1),
                 Error::Iter => ExitCode::from(2),
                 Error::Parse(_) => ExitCode::from(3),
+    			Error::Write(_) => ExitCode::from(4),
             }
         }
     }
@@ -70,78 +127,5 @@ mod ac {
         }
 
         res
-    }
-}
-
-use std::io::{Read, stdin};
-use ac::Error;
-
-fn main() -> Result<(), Error> {
-    let mut s = String::new();
-    stdin().read_to_string(&mut s).map_err(Error::Input)?;
-
-    print!("{}", solve(&s)?);
-
-    Ok(())
-}
-
-/// (x, y, c)
-/// (p1, p2, ..., pn)
-///
-/// (0, 0, 0)
-/// (4, 0, 1)
-/// remaining elements: 4
-/// (4, 0, 1)
-/// x can accomodate 1 element, y can accomodate 2 elements
-/// 
-/// (4, 3, 1)
-/// x can accomodate 1 element, y can accomodate (2 - 1) element
-///
-/// (6, 5, 4, 3, 2, 1)
-/// (6, 0, 1)
-/// (6, 1, 2)
-///
-/// (3, 6, 5, 2, 7, 8, 9, 1, 4)
-/// (3, 0, 1)
-/// (3, 6, 0) => more than 3 + more than 6 = 5 + 3 = 8
-/// (6, 0, 1) => more than 6 + more than 0 = 3 + 7 = 10
-/// (6, 0, 1)
-/// (6, 0, 1) => 3 + 6 = 9
-/// (6, 5, 1) => 3 + 3 = 6
-/// (6, 0, 1)
-/// ()
-fn solve(input: &str) -> Result<usize, Error> {
-    todo!()
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::solve;
-
-    #[test]
-    fn test_1() {
-        let input = "2
-2 3
-";
-
-        std::assert_matches!(solve(input), Ok(499122184));
-    }
-
-    #[test]
-    fn test_2() {
-        let input = "6
-1 2 3 4 5 6
-";
-
-        std::assert_matches!(solve(input), Ok(499122250));
-    }
-
-    #[test]
-    fn test_3() {
-        let input = "9
-3 1 4 1 5 9 2 6 5
-";
-
-        std::assert_matches!(solve(input), Ok(855638200));
     }
 }

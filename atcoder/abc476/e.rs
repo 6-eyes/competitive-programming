@@ -21,44 +21,28 @@ fn solve(input: &str) -> Result<String, Error> {
         p.push(pi);
     }
 
-    let mut inv = {
-        let mut v = vec!{ 0; n + 1 };
-        for (i, &e) in p.iter().enumerate() {
-            v[e] = i + 1;
-        }
-        v
-    };
-
-    let mut st = SegmentTree::new(&p);
-    let mut rst = SegmentTree::new(p.into_iter().map(Reverse).collect::<Vec<Reverse<usize>>>());
+    let mut st = SegmentTree::new(p.iter().enumerate().map(|(i, v)| (*v, i)).collect::<Vec<(usize, usize)>>());
+    let mut rst = SegmentTree::new(p.iter().enumerate().map(|(i, v)| Reverse((*v, i))).collect::<Vec<Reverse<(usize, usize)>>>());
 
     for _ in 0..m {
         let (l, r) = (parse!(iter), parse!(iter));
         assert!(l > 0 && r > 0 && l < r);
-        let max = st.range_query(l - 1..r).unwrap().clone();
-        let min = rst.range_query(l - 1..r).unwrap().0;
+        let (max, max_idx) = st.range_query(l - 1..r).copied().unwrap();
+        let (min, min_idx) = rst.range_query(l - 1..r).unwrap().0;
 
-        let max_idx = inv[max];
-        let min_idx = inv[min];
+        // update permutation
+        p.swap(max_idx, min_idx);
 
-        st.set(max_idx - 1, min);
-        st.set(min_idx - 1, max);
+        // update st
+        st.set(max_idx, (min, max_idx));
+        st.set(min_idx, (max, min_idx));
 
-        rst.set(max_idx - 1, Reverse(min));
-        rst.set(min_idx - 1, Reverse(max));
-
-        (inv[max], inv[min]) = (min_idx, max_idx);
+        // update reverse st
+        rst.set(max_idx, Reverse((min, max_idx)));
+        rst.set(min_idx, Reverse((max, min_idx)));
     }
 
-    let invinv = {
-        let mut a = vec!{ 0; n };
-        for (i, e) in inv.into_iter().enumerate().skip(1) {
-            a[e - 1] = i;
-        }
-        a
-    };
-
-    let mut ans = invinv.into_iter().map(|v| v.to_string()).collect::<Vec<String>>().join(" ");
+    let mut ans = p.into_iter().map(|v| v.to_string()).collect::<Vec<String>>().join(" ");
     ans.push('\n');
 
     Ok(ans)

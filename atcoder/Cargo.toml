@@ -2,6 +2,11 @@
 name = "atcoder"
 version = "0.1.0"
 edition = "2024"
+default-run = "create_blueprint"
+
+[[bin]]
+name = "create_blueprint"
+path = "create_blueprint.rs"
 
 [[bin]]
 name = "abc460_a"
@@ -314,3 +319,23 @@ path = "abc476/d.rs"
 [[bin]]
 name = "abc476_e"
 path = "abc476/e.rs"
+
+[[bin]]
+name = "abc477_a"
+path = "abc477/a.rs"
+
+[[bin]]
+name = "abc477_b"
+path = "abc477/b.rs"
+
+[[bin]]
+name = "abc477_c"
+path = "abc477/c.rs"
+
+[[bin]]
+name = "abc477_d"
+path = "abc477/d.rs"
+
+[[bin]]
+name = "abc477_e"
+path = "abc477/e.rs"

@@ -1,4 +1,4 @@
-use std::io::{Read, stdin};
+use std::{cmp::Reverse, collections::BinaryHeap, io::{Read, stdin}};
 use ac::Error;
 
 fn main() -> Result<(), Error> {
@@ -10,8 +10,58 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
-fn solve(input: &str) -> Result<usize, Error> {
-    todo!()
+/// S -> C -> T = 1 path
+/// S -> T = 2 paths
+fn solve(input: &str) -> Result<String, Error> {
+    let mut iter = input.split_ascii_whitespace();
+    let (n, q) = (parse!(iter), parse!(iter));
+
+    let mut a = Vec::with_capacity(n);
+    for _ in 0..n {
+        a.push(parse!(iter));
+    }
+
+    let mut h = BinaryHeap::new();
+    for i in 0..n {
+        h.push(Reverse((parse!(iter), i)));
+    }
+
+    // prefix sum of a
+    let pa = std::iter::once(0).chain(a.iter().scan(0, |acc, x| {
+        *acc += x;
+        Some(*acc)
+    })).collect::<Vec<usize>>();
+
+    let mut c = vec!{ usize::MAX; n + 1 };
+    c[n] = 0;
+
+    while let Some(Reverse((d, i))) = h.pop() {
+        if d > c[i] { continue }
+        c[i] = d;
+        // add next nodes
+        let (left, right) = ((i + n - 1) % n, (i + 1) % n);
+        for (j, v) in [ (left, a[left]), (right, a[i]) ] {
+            h.push(Reverse((d + v, j)));
+        }
+    }
+
+    let mut ans = String::new();
+
+    for _ in 0..q {
+        let (s, t) = (parse!(iter), parse!(iter));
+        let on_rim = if s > n || t > n {
+            usize::MAX
+        }
+        else {
+            let d1 = pa[s - 1].abs_diff(pa[t - 1]);
+            d1.min(pa[n] - d1)
+        };
+
+        use std::fmt::Write;
+        writeln!(ans, "{}", on_rim.min(c[s - 1] + c[t - 1]))?;
+    }
+
+    Ok(ans)
 }
 
 #[cfg(test)]
@@ -20,9 +70,56 @@ mod tests {
 
     #[test]
     fn test_1() {
-        let input = "";
+        let input = "5 3
+1 3 4 2 5
+5 2 4 3 7
+2 5
+5 6
+1 4
+";
 
-        std::assert_matches!(solve(input), Ok(0));
+        let output = "6
+5
+6
+";
+
+        std::assert_matches!(solve(input), Ok(o) if o == output);
+    }
+
+    #[test]
+    fn test_2() {
+        let input = "10 12
+95786828 55052989 7398452 90695030 73248844 120697567 77915140 68865651 15301338 68674005
+690874817 21524935 244587369 529970100 736247510 757265588 993115119 576136368 21553212 219853538
+5 6
+5 8
+2 6
+3 7
+1 3
+3 4
+8 11
+1 10
+2 6
+6 8
+8 9
+5 8
+";
+
+        let output = "73248844
+265090269
+226395315
+244911927
+150839817
+7398452
+90418863
+68674005
+226395315
+198612707
+68865651
+265090269
+";
+
+        std::assert_matches!(solve(input), Ok(o) if o == output);
     }
 }
 

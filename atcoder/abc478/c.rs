@@ -1,4 +1,4 @@
-use std::io::{Read, stdin};
+use std::{io::{Read, stdin}};
 use ac::Error;
 
 fn main() -> Result<(), Error> {
@@ -10,8 +10,32 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
-fn solve(input: &str) -> Result<usize, Error> {
-    todo!()
+fn solve(input: &str) -> Result<&'static str, Error> {
+    let mut iter = input.split_ascii_whitespace();
+    let (n, k) = (parse!(iter), parse!(iter));
+
+    let mut a = Vec::with_capacity(n);
+    for _ in 0..n {
+        a.push(parse!(iter));
+    }
+
+    let (mut prefix_max, mut max_idx) = (&usize::MIN, 0);
+    for (i, e) in a.iter().enumerate() {
+        prefix_max = prefix_max.max(e);
+        if prefix_max > e {
+            max_idx = i;
+        }
+    }
+
+    let (mut suffix_min, mut min_idx) = (&usize::MAX, n);
+    for (i, e) in a.iter().enumerate().rev() {
+        suffix_min = suffix_min.min(e);
+        if suffix_min < e {
+            min_idx = i;
+        }
+    }
+
+    Ok(if max_idx < k + min_idx { "Yes" } else { "No" })
 }
 
 #[cfg(test)]
@@ -20,9 +44,29 @@ mod tests {
 
     #[test]
     fn test_1() {
-        let input = "";
+        let input = "9 6
+1 4 1 4 2 1 3 5 6
+";
 
-        std::assert_matches!(solve(input), Ok(0));
+        std::assert_matches!(solve(input), Ok("Yes"));
+    }
+
+    #[test]
+    fn test_2() {
+        let input = "3 1
+3 2 1
+";
+
+        std::assert_matches!(solve(input), Ok("No"));
+    }
+
+    #[test]
+    fn test_3() {
+        let input = "30 25
+1 2 2 22 14 10 14 10 18 5 15 8 17 22 10 17 11 25 13 16 9 19 26 7 11 12 23 3 30 30
+";
+
+        std::assert_matches!(solve(input), Ok("Yes"));
     }
 }
 
@@ -39,7 +83,7 @@ mod ac {
         Input(std::io::Error),
         Iter,
         Parse(ParseIntError),
-        Write(std::fmt::Error),
+    	Write(std::fmt::Error),
     }
 
     impl Display for Error {
@@ -48,7 +92,7 @@ mod ac {
                 Error::Input(e) => write!(f, "unable to fetch input: {e}"),
                 Error::Iter => write!(f, "error fetching value from iterator"),
                 Error::Parse(e) => write!(f, "error parsing element: {e}"),
-                Error::Write(e) => write!(f, "error writing to the string: {e}"),
+    			Error::Write(e) => write!(f, "error writing to the string: {e}"),
             }
         }
     }
@@ -60,9 +104,9 @@ mod ac {
     }
 
     impl From<std::fmt::Error> for Error {
-        fn from(value: std::fmt::Error) -> Self {
-            Self::Write(value)
-        }
+    	fn from(value: std::fmt::Error) -> Self {
+    		Self::Write(value)
+    	}
     }
 
     impl Termination for Error {
@@ -71,7 +115,7 @@ mod ac {
                 Error::Input(_) => ExitCode::from(1),
                 Error::Iter => ExitCode::from(2),
                 Error::Parse(_) => ExitCode::from(3),
-                Error::Write(_) => ExitCode::from(4),
+    			Error::Write(_) => ExitCode::from(4),
             }
         }
     }

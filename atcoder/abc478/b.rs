@@ -11,7 +11,25 @@ fn main() -> Result<(), Error> {
 }
 
 fn solve(input: &str) -> Result<usize, Error> {
-    todo!()
+    let mut iter = input.split_ascii_whitespace();
+    let (n, v) = (parse!(iter), parse!(iter));
+
+    let mut w = Vec::with_capacity(n);
+    for _ in 0..n {
+        w.push(parse!(iter));
+    }
+
+    let mut hc = std::array::from_fn::<(usize, usize), 3, _>(|i| (i + 1, w[i]));
+
+    for (i, w) in w.into_iter().enumerate().skip(3).map(|(i, v)| (i + 1, v)) {
+        let tc = hc.iter().map(|v| v.0).sum::<usize>();
+        // find the element to be replaced
+        if let Some(e) = hc.iter_mut().filter(|e| tc + i - e.0 <= v).min_by_key(|e| e.1) && w > e.1 {
+            *e = (i, w);
+        }
+    }
+
+    Ok(hc.into_iter().map(|v| v.1).sum())
 }
 
 #[cfg(test)]
@@ -20,9 +38,20 @@ mod tests {
 
     #[test]
     fn test_1() {
-        let input = "";
+        let input = "5 9
+31 41 59 26 53
+";
 
-        std::assert_matches!(solve(input), Ok(0));
+        std::assert_matches!(solve(input), Ok(143));
+    }
+
+    #[test]
+    fn test_2() {
+        let input = "10 16
+102228 448944 131224 326172 500169 670309 976672 579051 974511 773940
+";
+
+        std::assert_matches!(solve(input), Ok(2095925));
     }
 }
 
@@ -39,7 +68,7 @@ mod ac {
         Input(std::io::Error),
         Iter,
         Parse(ParseIntError),
-        Write(std::fmt::Error),
+    	Write(std::fmt::Error),
     }
 
     impl Display for Error {
@@ -48,7 +77,7 @@ mod ac {
                 Error::Input(e) => write!(f, "unable to fetch input: {e}"),
                 Error::Iter => write!(f, "error fetching value from iterator"),
                 Error::Parse(e) => write!(f, "error parsing element: {e}"),
-                Error::Write(e) => write!(f, "error writing to the string: {e}"),
+    			Error::Write(e) => write!(f, "error writing to the string: {e}"),
             }
         }
     }
@@ -60,9 +89,9 @@ mod ac {
     }
 
     impl From<std::fmt::Error> for Error {
-        fn from(value: std::fmt::Error) -> Self {
-            Self::Write(value)
-        }
+    	fn from(value: std::fmt::Error) -> Self {
+    		Self::Write(value)
+    	}
     }
 
     impl Termination for Error {
@@ -71,7 +100,7 @@ mod ac {
                 Error::Input(_) => ExitCode::from(1),
                 Error::Iter => ExitCode::from(2),
                 Error::Parse(_) => ExitCode::from(3),
-                Error::Write(_) => ExitCode::from(4),
+    			Error::Write(_) => ExitCode::from(4),
             }
         }
     }

@@ -10,8 +10,51 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
-fn solve(input: &str) -> Result<usize, Error> {
-    todo!()
+fn solve(input: &str) -> Result<String, Error> {
+    let mut iter = input.split_ascii_whitespace();
+    let (n, q) = (parse!(iter), parse!(iter));
+
+    let mut events = vec!{ Vec::new(); q };
+    for _ in 0..q {
+        let (l, r, x) = (parse!(iter), parse!(iter), parse!(iter));
+        events[x - 1].push((l, r));
+    }
+
+    let mut ans_diff = vec!{ 0; n + 2 };
+
+    for mut event in events.into_iter().filter(|v| !v.is_empty()) {
+        event.sort_unstable();
+        // fetch intersections
+        let mut i = Vec::<(usize, usize)>::new();
+        for e in event {
+            if let Some(last) = i.last_mut() {
+                // 1..2 and 3..4 gives 1..4
+                if e.0 > last.1 + 1 {
+                    i.push(e);
+                }
+                else {
+                    last.1 = last.1.max(e.1);
+                }
+            }
+            else {
+                i.push(e);
+            }
+        }
+
+        for (l, r) in i {
+            ans_diff[l] += 1;
+            ans_diff[r + 1] -= 1;
+        }
+    }
+
+    // join the diff array
+    let mut ans = ans_diff.into_iter().skip(1).take(n).scan(0, |acc, d| {
+        *acc += d;
+        Some(acc.to_string())
+    }).collect::<Vec<String>>().join(" ");
+    ans.push('\n');
+
+    Ok(ans)
 }
 
 #[cfg(test)]
@@ -20,9 +63,49 @@ mod tests {
 
     #[test]
     fn test_1() {
-        let input = "";
+        let input = "8 5
+2 5 1
+1 4 2
+7 8 1
+3 6 3
+2 5 2
+";
 
-        std::assert_matches!(solve(input), Ok(0));
+        let output = "1 2 3 3 3 1 1 1
+";
+
+        std::assert_matches!(solve(input), Ok(o) if o == output);
+    }
+
+    #[test]
+    fn test_2() {
+        let input = "30 20
+3 22 11
+8 30 10
+12 14 7
+2 17 4
+1 19 12
+7 30 15
+11 23 2
+14 25 17
+9 12 7
+10 16 7
+16 18 19
+1 11 14
+11 15 4
+1 21 6
+4 8 10
+23 24 11
+8 27 10
+1 19 12
+23 23 16
+13 24 12
+";
+
+        let output = "3 4 5 6 6 6 7 7 8 8 9 8 8 9 9 10 9 8 7 7 7 6 7 5 3 2 2 2 2 2
+";
+
+        std::assert_matches!(solve(input), Ok(o) if o == output);
     }
 }
 
@@ -39,7 +122,7 @@ mod ac {
         Input(std::io::Error),
         Iter,
         Parse(ParseIntError),
-        Write(std::fmt::Error),
+    	Write(std::fmt::Error),
     }
 
     impl Display for Error {
@@ -48,7 +131,7 @@ mod ac {
                 Error::Input(e) => write!(f, "unable to fetch input: {e}"),
                 Error::Iter => write!(f, "error fetching value from iterator"),
                 Error::Parse(e) => write!(f, "error parsing element: {e}"),
-                Error::Write(e) => write!(f, "error writing to the string: {e}"),
+    			Error::Write(e) => write!(f, "error writing to the string: {e}"),
             }
         }
     }
@@ -60,9 +143,9 @@ mod ac {
     }
 
     impl From<std::fmt::Error> for Error {
-        fn from(value: std::fmt::Error) -> Self {
-            Self::Write(value)
-        }
+    	fn from(value: std::fmt::Error) -> Self {
+    		Self::Write(value)
+    	}
     }
 
     impl Termination for Error {
@@ -71,7 +154,7 @@ mod ac {
                 Error::Input(_) => ExitCode::from(1),
                 Error::Iter => ExitCode::from(2),
                 Error::Parse(_) => ExitCode::from(3),
-                Error::Write(_) => ExitCode::from(4),
+    			Error::Write(_) => ExitCode::from(4),
             }
         }
     }

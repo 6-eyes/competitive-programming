@@ -39,7 +39,7 @@ mod ac {
         Input(std::io::Error),
         Iter,
         Parse(ParseIntError),
-        Write(std::fmt::Error),
+    	Write(std::fmt::Error),
     }
 
     impl Display for Error {
@@ -48,7 +48,7 @@ mod ac {
                 Error::Input(e) => write!(f, "unable to fetch input: {e}"),
                 Error::Iter => write!(f, "error fetching value from iterator"),
                 Error::Parse(e) => write!(f, "error parsing element: {e}"),
-                Error::Write(e) => write!(f, "error writing to the string: {e}"),
+    			Error::Write(e) => write!(f, "error writing to the string: {e}"),
             }
         }
     }
@@ -60,9 +60,9 @@ mod ac {
     }
 
     impl From<std::fmt::Error> for Error {
-        fn from(value: std::fmt::Error) -> Self {
-            Self::Write(value)
-        }
+    	fn from(value: std::fmt::Error) -> Self {
+    		Self::Write(value)
+    	}
     }
 
     impl Termination for Error {
@@ -71,7 +71,7 @@ mod ac {
                 Error::Input(_) => ExitCode::from(1),
                 Error::Iter => ExitCode::from(2),
                 Error::Parse(_) => ExitCode::from(3),
-                Error::Write(_) => ExitCode::from(4),
+    			Error::Write(_) => ExitCode::from(4),
             }
         }
     }

@@ -339,3 +339,23 @@ path = "abc477/d.rs"
 [[bin]]
 name = "abc477_e"
 path = "abc477/e.rs"
+
+[[bin]]
+name = "abc478_a"
+path = "abc478/a.rs"
+
+[[bin]]
+name = "abc478_b"
+path = "abc478/b.rs"
+
+[[bin]]
+name = "abc478_c"
+path = "abc478/c.rs"
+
+[[bin]]
+name = "abc478_d"
+path = "abc478/d.rs"
+
+[[bin]]
+name = "abc478_e"
+path = "abc478/e.rs"

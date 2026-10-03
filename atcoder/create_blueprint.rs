@@ -1,6 +1,9 @@
 use std::io::Write;
 
 fn main() {
+    // 0. set instant
+    let instant = std::time::Instant::now();
+
     // 1. fetch `rustc` path
     let rustc = {
         let Ok(o) = std::process::Command::new("rustup").args([ "which", "rustc" ]).stdin(std::process::Stdio::null()).stderr(std::process::Stdio::null()).output().inspect_err(|e| eprintln!("unable to execute command: {e}")) else { return };
@@ -97,7 +100,7 @@ fn main() {
     }
 
     println!("updated config '{}'", config.display());
-    println!("contest abc{} created", latest + 1);
+    println!("contest 'abc{}' created in took {}ms.", latest + 1, instant.elapsed().as_millis());
 }
 
 #[derive(Debug)]
